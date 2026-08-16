@@ -19,7 +19,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 # Set defaults if not provided
-N_GPUS=${N_GPUS:-4}  # Default to 4 GPUs
+N_GPUS=${N_GPUS:-1}  # Default to 4 GPUs
 TP_SIZE=${TP_SIZE:-1} # Default to tensor parallel size 1
 
 # simple server

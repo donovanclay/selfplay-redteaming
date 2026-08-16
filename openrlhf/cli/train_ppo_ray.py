@@ -21,7 +21,10 @@ from openrlhf.utils import get_strategy
 # Add RAY_DEBUG environment variable to enable Ray Debugger
 ray.init(
     runtime_env={
-        "env_vars": {"RAY_DEBUG_POST_MORTEM": "1"},
+        "env_vars": {
+            "RAY_DEBUG_POST_MORTEM": "0",
+            "VLLM_ALLOW_INSECURE_SERIALIZATION": "1",
+        },
     }, 
     address="auto"
 )

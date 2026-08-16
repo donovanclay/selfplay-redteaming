@@ -42,7 +42,7 @@ class WorkerWrap:
             import ray.util.collective as collective
             collective.broadcast(weight, 0, group_name=self._model_update_group)
         else:
-            torch.distributed.broadcast(weight, 0, group=self._model_update_group)
+            torch.distributed.broadcast(weight, group_src=0, group=self._model_update_group)
 
         self.model_runner.model.load_weights(weights=[(name, weight)])
 

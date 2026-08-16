@@ -960,7 +960,7 @@ class ActorPPOTrainer(BasePPOTrainer):
 
                             collective.broadcast(param.data, 0, group_name=self._model_update_group)
                         else:
-                            torch.distributed.broadcast(param.data, 0, group=self._model_update_group)
+                            torch.distributed.broadcast(param.data, group_src=0, group=self._model_update_group)
                         ray.get(refs)
             # CUDA IPC
             else:

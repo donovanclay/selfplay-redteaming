@@ -191,9 +191,7 @@ class WildGuardServerProxy:
             ).remote(args, i)
             self.workers.append(worker)
         
-        self.worker_queues = {i: asyncio.Queue() for i in range(len(self.workers))}
         self.current_worker = 0
-        self.batch_counter = 0  # Add a counter for generating unique batch IDs
 
     def get_next_worker_id(self):
         """Round-robin worker selection"""
@@ -201,31 +199,11 @@ class WildGuardServerProxy:
         self.current_worker = (self.current_worker + 1) % len(self.workers)
         return worker_id
 
-    async def process_worker_queue(self, worker_id, batch_id):
-        """Process a specific batch from the worker's queue"""
-        worker = self.workers[worker_id]
-        while True:
-            # Keep checking queue until we find our batch
-            current_batch, current_id, sampling_params = await self.worker_queues[worker_id].get()
-            try:
-                if current_id == batch_id:
-                    result = await asyncio.to_thread(ray.get, worker.classify.remote(current_batch, sampling_params))
-                    return result
-                else:
-                    # Put other batches back in queue and continue searching
-                    await self.worker_queues[worker_id].put((current_batch, current_id, sampling_params))
-            finally:
-                self.worker_queues[worker_id].task_done()
-
     async def classify(self, items: list[dict[str, str]], sampling_params=None) -> list[SafetyClassifierOutput]:
-        """Queue batch for processing and wait for results"""
+        """Dispatch query directly to round-robin selected Ray worker"""
         worker_id = self.get_next_worker_id()
-        batch_id = self.batch_counter
-        self.batch_counter += 1
-        await self.worker_queues[worker_id].put((items, batch_id, sampling_params))
-        
-        # Process the specific batch and return results
-        result = await self.process_worker_queue(worker_id, batch_id)
+        worker = self.workers[worker_id]
+        result = await asyncio.to_thread(ray.get, worker.classify.remote(items, sampling_params))
         return result
 
 

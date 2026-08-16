@@ -158,6 +158,7 @@ checkpoints
 eval/results/
 red_team/data/*
 slurm_output/*
+logs/
 
 # Ignore everything in data folder, but include data.zip
 red_team/data/*
